@@ -94,7 +94,7 @@ func (s *Server) Handler(conn net.Conn) {
 		case <-isLive:
 			// 当前用户是活跃的，什么都不做，继续阻塞
 
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Minute * 30):
 			// 已经超时
 			user.SendMsg("你被踢下线了，因为你长时间没有活动。。。\n")
 

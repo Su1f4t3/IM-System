@@ -1,6 +1,9 @@
 package main
 
-import "net"
+import (
+	"net"
+	"strings"
+)
 
 type User struct {
 	Name string      // 用户名（默认使用连接地址）
@@ -77,7 +80,7 @@ func (u *User) DoMessage(msg string) {
 
 	} else if len(msg) > 7 && msg[0:7] == "rename|" {
 		// 消息格式：rename|张三
-		newName := msg[7:]
+		newName := strings.Split(msg, "|")[1]
 
 		// 判断name是否存在
 		_, ok := u.server.OnlineMap[newName]
@@ -92,6 +95,30 @@ func (u *User) DoMessage(msg string) {
 			u.Name = newName
 			u.SendMsg("用户名更新成功，新的用户名为：" + u.Name + "\n")
 		}
+	} else if len(msg) > 4 && msg[0:3] == "to|" {
+		// 消息格式：to|张三|消息内容
+
+		// 1. 获取对方的用户名
+		remotename := strings.Split(msg, "|")[1]
+		if remotename == "" {
+			u.SendMsg("该用户名不存在，请重发\n")
+		}
+
+		// 2. 根据用户名得到User对象
+		remoteUser, ok := u.server.OnlineMap[remotename]
+		if !ok {
+			u.SendMsg("该用户名不存在，请重发\n")
+			return
+		}
+
+		// 3. 获取消息内容，通过对方的User对象将消息发送过去
+		content := strings.Split(msg, "|")[2]
+		if content == "" {
+			u.SendMsg("无消息内容，请重发\n")
+			return
+		}
+		remoteUser.SendMsg(u.Name + " 对你说：" + content + "\n")
+
 	} else {
 		u.server.BroadCast(u, msg)
 	}
