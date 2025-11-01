@@ -56,7 +56,7 @@ func (u *User) Offline() {
 }
 
 // 给当前user对应的客户端发送消息
-func (u *User) sendMsg(msg string) {
+func (u *User) SendMsg(msg string) {
 	u.conn.Write([]byte(msg))
 }
 
@@ -68,7 +68,7 @@ func (u *User) DoMessage(msg string) {
 		u.server.maplock.Lock()
 		for _, user := range u.server.OnlineMap {
 			onlineMsg := "[" + user.Addr + "]" + user.Name + ": 在线...\n"
-			u.sendMsg(onlineMsg)
+			u.SendMsg(onlineMsg)
 		}
 		u.server.maplock.Unlock()
 
@@ -79,7 +79,7 @@ func (u *User) DoMessage(msg string) {
 		// 判断name是否存在
 		_, ok := u.server.OnlineMap[newName]
 		if ok {
-			u.sendMsg("当前用户名已被使用\n")
+			u.SendMsg("当前用户名已被使用\n")
 		} else {
 			u.server.maplock.Lock()
 			delete(u.server.OnlineMap, u.Name) // 删除原来的用户名
@@ -87,7 +87,7 @@ func (u *User) DoMessage(msg string) {
 			u.server.maplock.Unlock()
 
 			u.Name = newName
-			u.sendMsg("用户名更新成功，新的用户名为：" + u.Name + "\n")
+			u.SendMsg("用户名更新成功，新的用户名为：" + u.Name + "\n")
 		}
 	} else {
 		u.server.BroadCast(u, msg)

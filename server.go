@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 )
 
 // 定义服务器结构体
@@ -55,6 +56,9 @@ func (s *Server) Handler(conn net.Conn) {
 	// 用户上线业务
 	user.Online()
 
+	// 监听用户是否活跃的channel
+	isLive := make(chan bool)
+
 	// 接受客户端发送的消息
 	go func() {
 		buf := make([]byte, 4096) // 创建一个 4096 字节的缓冲区（切片）用于存储从客户端接收的数据
@@ -78,11 +82,32 @@ func (s *Server) Handler(conn net.Conn) {
 
 			// 用户针对msg进行消息处理
 			user.DoMessage(msg)
+
+			// 用户是活跃的
+			isLive <- true
 		}
 	}()
 
 	// 当前handler阻塞
-	select {}
+	for {
+		select {
+		case <-isLive:
+			// 当前用户是活跃的，什么都不做，继续阻塞
+
+		case <-time.After(time.Second * 10):
+			// 已经超时
+			user.SendMsg("你被踢下线了，因为你长时间没有活动。。。\n")
+
+			// 销毁用户资源
+			close(user.C)
+
+			// 关闭连接
+			conn.Close()
+
+			// 退出当前handler
+			return
+		}
+	}
 }
 
 // 启动服务器的接口
