@@ -53,6 +53,9 @@ func (u *User) Offline() {
 
 	// 广播当前用户下线消息
 	u.server.BroadCast(u, "已下线")
+
+	// 统一关闭用户的channel
+	close(u.C)
 }
 
 // 给当前user对应的客户端发送消息

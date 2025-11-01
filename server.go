@@ -99,6 +99,7 @@ func (s *Server) Handler(conn net.Conn) {
 			user.SendMsg("你被踢下线了，因为你长时间没有活动。。。\n")
 
 			// 销毁用户资源
+			user.Offline()
 			close(user.C)
 
 			// 关闭连接
