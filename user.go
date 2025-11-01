@@ -9,7 +9,7 @@ type User struct {
 	Name string      // 用户名（默认使用连接地址）
 	Addr string      // 用户地址
 	C    chan string // 接收消息的channel
-	conn net.Conn    // 网络连接对象
+	Conn net.Conn    // 网络连接对象
 
 	server *Server // 当前用户所属的服务器
 }
@@ -23,7 +23,7 @@ func NewUser(conn net.Conn, server *Server) *User {
 		Name: userAddr,
 		Addr: userAddr,
 		C:    make(chan string),
-		conn: conn,
+		Conn: conn,
 
 		server: server,
 	}
@@ -63,7 +63,7 @@ func (u *User) Offline() {
 
 // 给当前user对应的客户端发送消息
 func (u *User) SendMsg(msg string) {
-	u.conn.Write([]byte(msg))
+	u.Conn.Write([]byte(msg))
 }
 
 // 用户处理消息业务
@@ -129,6 +129,6 @@ func (u *User) ListenMessage() {
 	for {
 		msg := <-u.C
 
-		u.conn.Write([]byte(msg + "\n"))
+		u.Conn.Write([]byte(msg + "\n"))
 	}
 }
