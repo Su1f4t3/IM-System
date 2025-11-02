@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strconv"
 )
 
 type Client struct {
@@ -25,7 +26,8 @@ func NewClient(serverIp string, serverPort int) *Client {
 	}
 
 	// 连接server
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", serverIp, serverPort))
+	addr := net.JoinHostPort(serverIp, strconv.Itoa(serverPort))
+	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		fmt.Println("net.Dial err:", err)
 		return nil
@@ -153,7 +155,7 @@ func (client *Client) UpdateName() bool {
 
 func (client *Client) Run() {
 	for client.Flag != 0 {
-		for client.menu() != true {
+		for !client.menu() {
 		}
 
 		// 根据不同的模式处理不同的业务
@@ -161,15 +163,12 @@ func (client *Client) Run() {
 		case 1:
 			// 公聊模式
 			client.PublicChat()
-			break
 		case 2:
 			// 私聊模式
 			client.PrivateChat()
-			break
 		case 3:
 			// 修改用户名
 			client.UpdateName()
-			break
 		}
 	}
 }
